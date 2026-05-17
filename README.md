@@ -1,6 +1,8 @@
 # Acp — Agent Client Protocol for .NET
 
 [![ci](https://github.com/sargeMonkey/libACP/actions/workflows/ci.yml/badge.svg)](https://github.com/sargeMonkey/libACP/actions/workflows/ci.yml)
+[![NuGet](https://img.shields.io/nuget/v/LibAcp.svg)](https://www.nuget.org/packages/LibAcp)
+[![NuGet downloads](https://img.shields.io/nuget/dt/LibAcp.svg)](https://www.nuget.org/packages/LibAcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![.NET](https://img.shields.io/badge/.NET-8.0%20%7C%2010.0-512BD4)](https://dotnet.microsoft.com/)
 
@@ -11,24 +13,25 @@ ACP is a JSON-RPC 2.0 protocol that standardises how code editors ("clients") ta
 agents ("agents"). This library lets you build either side in .NET 8+ (multi-targets `net8.0`
 and `net10.0`).
 
-> **Status:** unaffiliated community port. The community libraries page lists `microsoft/acpdotnet`
-> but that repository does not exist (404), so this implementation fills that gap.
+> **Status:** unaffiliated community port. See [Related projects](#related-projects) below for
+> the other community .NET implementations.
 
 ## Install
 
-Once published to NuGet (not yet — this is a 0.1.0 preview):
-
 ```pwsh
-dotnet add package Acp
+dotnet add package LibAcp
 ```
 
-For now, clone and reference the project directly:
+Or reference the source directly:
 
 ```pwsh
 git clone https://github.com/sargeMonkey/libACP.git
 cd libACP
 dotnet build Acp.slnx
 ```
+
+> The NuGet package id is **`LibAcp`** but the assembly name and root namespace remain
+> `Acp`, so your `using Acp;` directives work unchanged.
 
 ## Features
 
@@ -212,6 +215,29 @@ The unstable surface that the TS SDK marks `unstable_*` is intentionally **not**
 release: NES, elicitation, providers, document sync (`document/did*`), and `session/set_model`.
 You can still reach them via the `extMethod` / `extNotification` escape hatch.
 
+## Related projects
+
+Other community .NET implementations of ACP (as of mid-2026):
+
+- **[nuskey8/acp-csharp](https://github.com/nuskey8/acp-csharp)** — published as
+  [`AgentClientProtocol`](https://www.nuget.org/packages/AgentClientProtocol) on NuGet.
+  Similar shape (`IAcpClient`/`IAcpAgent`, `ClientSideConnection`/`AgentSideConnection`).
+  Used in production by `nuskey8/UnityAgentClient`.
+- **`AgentClientProtocol.*`** family (e.g. `AgentClientProtocol.Agent`,
+  `AgentClientProtocol.Client`) — date-versioned packages auto-generated from the official
+  ACP JSON Schema.
+
+This package (`LibAcp`) differs in being:
+
+- Hand-written rather than generated, with idiomatic C# `record`s and discriminated-union
+  converters chosen per the schema.
+- Multi-targeted at `net8.0` (LTS) and `net10.0` (current LTS).
+- Conservative about scope: only the **stable** protocol surface is modelled as first-class
+  DTOs; unstable surface (`unstable_*`) is reachable via `ExtMethodAsync` /
+  `ExtNotificationAsync`.
+
+Pick whichever fits your project best — the protocol is the same.
+
 ## License
 
 [MIT](LICENSE). This is a community implementation. The protocol itself is governed by the
@@ -221,3 +247,9 @@ You can still reach them via the `extMethod` / `extNotification` escape hatch.
 
 Issues and pull requests welcome. By contributing you agree your work will be released under
 the MIT license.
+
+## Releasing
+
+See [PUBLISHING.md](PUBLISHING.md) for how to cut a release and push to nuget.org. The
+[`release.yml`](.github/workflows/release.yml) workflow builds, tests, packs and pushes on any
+`vX.Y.Z` git tag.

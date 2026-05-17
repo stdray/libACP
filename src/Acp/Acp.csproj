@@ -13,22 +13,26 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <PackageId>Acp</PackageId>
+    <PackageId>LibAcp</PackageId>
     <Title>Agent Client Protocol (ACP) for .NET</Title>
-    <Description>An idiomatic .NET implementation of the Agent Client Protocol (ACP) — JSON-RPC 2.0 between code editors and AI coding agents. See https://agentclientprotocol.com.</Description>
+    <Description>An idiomatic .NET implementation of the Agent Client Protocol (ACP) — JSON-RPC 2.0 between code editors and AI coding agents. See https://agentclientprotocol.com. Targets net8.0 and net10.0.</Description>
     <Authors>Sujith Jacob and contributors</Authors>
     <Company>Acp .NET</Company>
+    <Copyright>Copyright (c) 2026 Sujith Jacob and contributors</Copyright>
     <Version>0.1.0</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>acp;agent-client-protocol;jsonrpc;ai;agent;coding-agent;mcp</PackageTags>
+    <PackageTags>acp;agent-client-protocol;jsonrpc;ai;agent;coding-agent;mcp;sdk</PackageTags>
     <PackageProjectUrl>https://github.com/sargeMonkey/libACP</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sargeMonkey/libACP</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>Initial release. Full coverage of the stable ACP v1 surface, including session/*, fs/*, terminal/*, request_permission, and the _meta extensibility field. See CHANGELOG.md for details.</PackageReleaseNotes>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <Deterministic>true</Deterministic>
+    <DebugType>portable</DebugType>
     <ContinuousIntegrationBuild Condition="'$(GITHUB_ACTIONS)' == 'true'">true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
@@ -40,6 +44,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageReference Include="System.IO.Pipelines" Version="8.0.0" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
