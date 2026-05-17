@@ -1,0 +1,27 @@
+# Default to LF for text files, normalised on commit.
+* text=auto eol=lf
+
+# Force CRLF for Windows-only files
+*.bat       text eol=crlf
+*.cmd       text eol=crlf
+*.ps1       text eol=lf
+
+# C# source
+*.cs        text diff=csharp eol=lf
+*.csproj    text eol=lf
+*.sln       text eol=lf
+*.slnx      text eol=lf
+*.json      text eol=lf
+*.xml       text eol=lf
+*.md        text eol=lf
+*.yml       text eol=lf
+*.yaml      text eol=lf
+
+# Binaries
+*.dll       binary
+*.exe       binary
+*.pdb       binary
+*.png       binary
+*.jpg       binary
+*.gif       binary
+*.ico       binary

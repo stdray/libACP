@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/examples/">
+    <Project Path="examples/EchoAgent/EchoAgent.csproj" />
+    <Project Path="examples/SampleClient/SampleClient.csproj" />
+  </Folder>
+  <Folder Name="/src/">
+    <Project Path="src/Acp/Acp.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Acp.Tests/Acp.Tests.csproj" />
+  </Folder>
+</Solution>
