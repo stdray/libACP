@@ -52,13 +52,13 @@ dotnet build Acp.slnx
 
 ```
 src/
-  Acp/                       # The library (net8.0)
+  Acp/                       # The library (net8.0 / net10.0 multi-target)
 tests/
   Acp.Tests/                 # xUnit tests (43 tests)
 examples/
   EchoAgent/                 # Stdio agent that streams the prompt back
   SampleClient/              # Spawns the EchoAgent and walks the protocol
-reference/                   # TS SDK source + schema.json (offline reference)
+.github/workflows/           # CI: build + test on linux/windows/mac, pack
 ```
 
 ## Build
