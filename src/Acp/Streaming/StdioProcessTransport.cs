@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using Acp.JsonRpc;
+using Acp.Platform;
 
 namespace Acp.Streaming;
 
@@ -46,31 +47,11 @@ public sealed class StdioProcessTransport : IMessageStream
         if (_process is not null)
             throw new InvalidOperationException("Transport has already been started.");
 
-        var resolvedCommand = ResolveCommandPath(command);
+        var psi = ProcessStartInfoFactory.CreateProcessStartInfo(command, args, env, workingDirectory);
 
-        var psi = new ProcessStartInfo
-        {
-            FileName = resolvedCommand,
-            UseShellExecute = false,
-            RedirectStandardInput = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            CreateNoWindow = true,
-            StandardOutputEncoding = Encoding.UTF8,
-            StandardErrorEncoding = Encoding.UTF8,
-        };
-
-        foreach (var arg in args)
-            psi.ArgumentList.Add(arg);
-
-        if (env is not null)
-        {
-            foreach (var (key, value) in env)
-                psi.Environment[key] = value;
-        }
-
-        if (!string.IsNullOrEmpty(workingDirectory))
-            psi.WorkingDirectory = workingDirectory;
+        // Ensure stdio encoding is UTF-8
+        psi.StandardOutputEncoding = Encoding.UTF8;
+        psi.StandardErrorEncoding = Encoding.UTF8;
 
         _process = System.Diagnostics.Process.Start(psi)
             ?? throw new InvalidOperationException($"Failed to start process: {command}");
@@ -131,35 +112,4 @@ public sealed class StdioProcessTransport : IMessageStream
         }
     }
 
-    /// <summary>
-    /// Resolves a command name to its full path using PATH and common extensions.
-    /// .NET's Process.Start with UseShellExecute=false can fail to find executables
-    /// that the shell resolves fine (e.g., WinGet-installed commands).
-    /// </summary>
-    private static string ResolveCommandPath(string command)
-    {
-        if (command.Contains(Path.DirectorySeparatorChar) ||
-            command.Contains(Path.AltDirectorySeparatorChar) ||
-            File.Exists(command))
-            return command;
-
-        var pathVar = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
-        var dirs = pathVar.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries);
-
-        var extensions = OperatingSystem.IsWindows()
-            ? new[] { "", ".exe", ".cmd", ".bat" }
-            : new[] { "" };
-
-        foreach (var dir in dirs)
-        {
-            foreach (var ext in extensions)
-            {
-                var candidate = Path.Combine(dir, command + ext);
-                if (File.Exists(candidate))
-                    return candidate;
-            }
-        }
-
-        return command;
-    }
 }
