@@ -48,9 +48,9 @@ public sealed record AgentModelState
 }
 
 /// <summary>
-/// A configuration option that the agent exposes for per-session tuning (e.g. temperature, tools).
-/// The exact structure is intentionally permissive to accommodate the variety of option categories
-/// in the protocol.
+/// A session configuration option exposed by the agent (<c>SessionConfigOption</c> in the schema).
+/// <see cref="Type"/> is <c>"select"</c> (<see cref="CurrentValue"/> is a value id string and
+/// <see cref="Options"/> lists the choices) or <c>"boolean"</c> (<see cref="CurrentValue"/> is a bool).
 /// </summary>
 public sealed record ConfigOption
 {
@@ -60,29 +60,49 @@ public sealed record ConfigOption
     [JsonPropertyName("name")]
     public string? Name { get; init; }
 
+    [JsonPropertyName("description")]
+    public string? Description { get; init; }
+
+    /// <summary><c>"select"</c> or <c>"boolean"</c>.</summary>
     [JsonPropertyName("type")]
     public string? Type { get; init; }
 
-    [JsonPropertyName("currentValue")]
-    public JsonElement? CurrentValue { get; init; }
-
-    [JsonPropertyName("defaultValue")]
-    public JsonElement? DefaultValue { get; init; }
-
-    [JsonPropertyName("options")]
-    public IReadOnlyList<ConfigOptionValue>? Options { get; init; }
-
-    [JsonPropertyName("possibleValues")]
-    public IReadOnlyList<string>? PossibleValues { get; init; }
-
+    /// <summary>Semantic category: <c>mode</c>, <c>model</c>, <c>model_config</c>, <c>thought_level</c>, or a custom string.</summary>
     [JsonPropertyName("category")]
     public string? Category { get; init; }
 
+    /// <summary>A value id string for <c>select</c> options, a bool for <c>boolean</c> options.</summary>
+    [JsonPropertyName("currentValue")]
+    public JsonElement? CurrentValue { get; init; }
+
+    /// <summary>
+    /// Choices of a <c>select</c> option. Either a flat list of values, or a list of groups
+    /// (entries with <see cref="ConfigOptionValue.Group"/> and nested <see cref="ConfigOptionValue.Options"/>).
+    /// </summary>
+    [JsonPropertyName("options")]
+    public IReadOnlyList<ConfigOptionValue>? Options { get; init; }
+
+    /// <remarks>Not part of the ACP schema.</remarks>
+    [JsonPropertyName("defaultValue")]
+    public JsonElement? DefaultValue { get; init; }
+
+    /// <remarks>Not part of the ACP schema.</remarks>
+    [JsonPropertyName("possibleValues")]
+    public IReadOnlyList<string>? PossibleValues { get; init; }
+
     [JsonPropertyName("_meta")]
     public Meta? Meta { get; init; }
+
+    /// <summary>All selectable values, flattening groups.</summary>
+    [JsonIgnore]
+    public IEnumerable<ConfigOptionValue> AllValues =>
+        (Options ?? []).SelectMany(o => o.Group is not null ? o.Options ?? [] : [o]);
 }
 
-/// <summary>A named value for a configuration option.</summary>
+/// <summary>
+/// A choice of a <c>select</c> config option (<c>SessionConfigSelectOption</c>), or a group of
+/// choices (<c>SessionConfigSelectGroup</c>) when <see cref="Group"/> is set.
+/// </summary>
 public sealed record ConfigOptionValue
 {
     [JsonPropertyName("value")]
@@ -90,4 +110,18 @@ public sealed record ConfigOptionValue
 
     [JsonPropertyName("name")]
     public string? Name { get; init; }
+
+    [JsonPropertyName("description")]
+    public string? Description { get; init; }
+
+    /// <summary>Group id; set only on group entries.</summary>
+    [JsonPropertyName("group")]
+    public string? Group { get; init; }
+
+    /// <summary>Choices inside a group; set only on group entries.</summary>
+    [JsonPropertyName("options")]
+    public IReadOnlyList<ConfigOptionValue>? Options { get; init; }
+
+    [JsonPropertyName("_meta")]
+    public Meta? Meta { get; init; }
 }

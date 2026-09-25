@@ -62,6 +62,10 @@ public abstract record ContentChunkUpdate : SessionUpdate
 {
     [JsonPropertyName("content")]
     public required ContentBlock Content { get; init; }
+
+    /// <summary>Identifier of the message this chunk belongs to, when the agent provides one.</summary>
+    [JsonPropertyName("messageId")]
+    public string? MessageId { get; init; }
 }
 
 public sealed record UserMessageChunk : ContentChunkUpdate
@@ -84,6 +88,7 @@ public sealed record ToolCallStartUpdate : SessionUpdate
 {
     [JsonPropertyName("toolCallId")] public required ToolCallId ToolCallId { get; init; }
     [JsonPropertyName("title")] public required string Title { get; init; }
+    [JsonPropertyName("name")] public string? Name { get; init; }
     [JsonPropertyName("kind")] public ToolKind? Kind { get; init; }
     [JsonPropertyName("status")] public ToolCallStatus? Status { get; init; }
     [JsonPropertyName("content")] public IReadOnlyList<ToolCallContent>? Content { get; init; }
@@ -99,6 +104,7 @@ public sealed record ToolCallUpdateUpdate : SessionUpdate
 {
     [JsonPropertyName("toolCallId")] public required ToolCallId ToolCallId { get; init; }
     [JsonPropertyName("title")] public string? Title { get; init; }
+    [JsonPropertyName("name")] public string? Name { get; init; }
     [JsonPropertyName("kind")] public ToolKind? Kind { get; init; }
     [JsonPropertyName("status")] public ToolCallStatus? Status { get; init; }
     [JsonPropertyName("content")] public IReadOnlyList<ToolCallContent>? Content { get; init; }
@@ -130,10 +136,51 @@ public sealed record AvailableCommandsUpdate : SessionUpdate
 /// <summary>The current mode of the session has changed.</summary>
 public sealed record CurrentModeUpdate : SessionUpdate
 {
-    [JsonPropertyName("modeId")]
-    public required SessionModeId ModeId { get; init; }
+    [JsonPropertyName("currentModeId")]
+    public required SessionModeId CurrentModeId { get; init; }
 
     public override string SessionUpdateKind => "current_mode_update";
+}
+
+/// <summary>The session's configuration options have changed. Carries the full, current set.</summary>
+public sealed record ConfigOptionUpdate : SessionUpdate
+{
+    [JsonPropertyName("configOptions")]
+    public required IReadOnlyList<ConfigOption> ConfigOptions { get; init; }
+
+    public override string SessionUpdateKind => "config_option_update";
+}
+
+/// <summary>Context window and cost update for a session.</summary>
+public sealed record UsageUpdate : SessionUpdate
+{
+    /// <summary>Tokens currently in context.</summary>
+    [JsonPropertyName("used")]
+    public required ulong Used { get; init; }
+
+    /// <summary>Total context window size in tokens.</summary>
+    [JsonPropertyName("size")]
+    public required ulong Size { get; init; }
+
+    /// <summary>Cumulative session cost, if known.</summary>
+    [JsonPropertyName("cost")]
+    public Cost? Cost { get; init; }
+
+    public override string SessionUpdateKind => "usage_update";
+}
+
+/// <summary>Cumulative cost information for a session.</summary>
+public sealed record Cost
+{
+    [JsonPropertyName("amount")]
+    public required double Amount { get; init; }
+
+    /// <summary>ISO 4217 currency code (e.g. <c>USD</c>).</summary>
+    [JsonPropertyName("currency")]
+    public required string Currency { get; init; }
+
+    [JsonPropertyName("_meta")]
+    public Meta? Meta { get; init; }
 }
 
 /// <summary>Session metadata (title, timestamps) has been updated.</summary>
@@ -147,6 +194,8 @@ public sealed record SessionInfoUpdate : SessionUpdate
 }
 
 /// <summary>Signals the end of an agent turn, optionally including token usage.</summary>
+/// <remarks>Not part of the ACP schema. Kept for compatibility; use <see cref="UsageUpdate"/> and the <c>session/prompt</c> response instead.</remarks>
+[Obsolete("'end_turn' is not an ACP session update. Use UsageUpdate and the session/prompt response's stopReason.")]
 public sealed record EndTurnUpdate : SessionUpdate
 {
     [JsonPropertyName("usage")]
@@ -156,6 +205,8 @@ public sealed record EndTurnUpdate : SessionUpdate
 }
 
 /// <summary>A file diff produced by the agent during a tool call.</summary>
+/// <remarks>Not part of the ACP schema. Kept for compatibility; diffs belong in <see cref="ToolCallContentDiff"/>.</remarks>
+[Obsolete("'diff' is not an ACP session update. Report diffs as ToolCallContentDiff inside tool_call / tool_call_update.")]
 public sealed record DiffUpdate : SessionUpdate
 {
     [JsonPropertyName("path")] public string? Path { get; init; }
@@ -163,4 +214,27 @@ public sealed record DiffUpdate : SessionUpdate
     [JsonPropertyName("diff")] public string? Diff { get; init; }
 
     public override string SessionUpdateKind => "diff";
+}
+
+/// <summary>
+/// A <c>session/update</c> whose <c>sessionUpdate</c> kind this library does not know. The raw
+/// payload is preserved so newer agents do not break older clients.
+/// </summary>
+public sealed record UnknownSessionUpdate : SessionUpdate
+{
+    public UnknownSessionUpdate(string kind, System.Text.Json.JsonElement raw)
+    {
+        Kind = kind;
+        Raw = raw;
+    }
+
+    /// <summary>The wire <c>sessionUpdate</c> value.</summary>
+    [JsonIgnore]
+    public string Kind { get; }
+
+    /// <summary>The complete update object as received.</summary>
+    [JsonIgnore]
+    public System.Text.Json.JsonElement Raw { get; }
+
+    public override string SessionUpdateKind => Kind;
 }

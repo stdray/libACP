@@ -47,6 +47,14 @@ public interface IAgent
     Task<CloseSessionResponse?> CloseSessionAsync(CloseSessionRequest request, CancellationToken cancellationToken)
         => throw JsonRpc.RequestErrorException.MethodNotFound(Schema.AgentMethods.SessionClose);
 
+    /// <summary>Deletes a session from <c>session/list</c>. Requires <c>session.delete</c> capability.</summary>
+    Task<DeleteSessionResponse?> DeleteSessionAsync(DeleteSessionRequest request, CancellationToken cancellationToken)
+        => throw JsonRpc.RequestErrorException.MethodNotFound(Schema.AgentMethods.SessionDelete);
+
+    /// <summary>Terminates the current authenticated session. Requires <c>auth.logout</c> capability.</summary>
+    Task<LogoutResponse?> LogoutAsync(LogoutRequest request, CancellationToken cancellationToken)
+        => throw JsonRpc.RequestErrorException.MethodNotFound(Schema.AgentMethods.Logout);
+
     /// <summary>Sets the operational mode for a session.</summary>
     Task<SetSessionModeResponse?> SetSessionModeAsync(SetSessionModeRequest request, CancellationToken cancellationToken)
         => throw JsonRpc.RequestErrorException.MethodNotFound(Schema.AgentMethods.SessionSetMode);

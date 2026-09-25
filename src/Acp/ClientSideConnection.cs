@@ -65,6 +65,12 @@ public sealed class ClientSideConnection : IAgent, IAsyncDisposable
     public Task<CloseSessionResponse?> CloseSessionAsync(CloseSessionRequest request, CancellationToken cancellationToken)
         => _connection.SendRequestAsync<CloseSessionResponse?>(AgentMethods.SessionClose, request, cancellationToken);
 
+    public Task<DeleteSessionResponse?> DeleteSessionAsync(DeleteSessionRequest request, CancellationToken cancellationToken)
+        => _connection.SendRequestAsync<DeleteSessionResponse?>(AgentMethods.SessionDelete, request, cancellationToken);
+
+    public Task<LogoutResponse?> LogoutAsync(LogoutRequest request, CancellationToken cancellationToken)
+        => _connection.SendRequestAsync<LogoutResponse?>(AgentMethods.Logout, request, cancellationToken);
+
     public Task<PromptResponse> PromptAsync(PromptRequest request, CancellationToken cancellationToken)
         => _connection.SendRequestAsync<PromptResponse>(AgentMethods.SessionPrompt, request, cancellationToken);
 

@@ -4,6 +4,45 @@ All notable changes to this project will be documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+Brings the library in line with the stable ACP v1 schema (upstream schema 1.9.x).
+
+### Fixed (wire format — breaking)
+- `current_mode_update` now writes/reads `currentModeId` (was `modeId`). The C# property is
+  renamed `CurrentModeUpdate.CurrentModeId`.
+- `session/set_config_option` request uses `configId` + `value` (+ `type: "boolean"` for boolean
+  options) instead of `optionId` / `valueId`; the response field is `configOptions` (was
+  `options`) and is typed as `IReadOnlyList<ConfigOption>`. Use
+  `SetSessionConfigOptionRequest.Select(...)` / `.Boolean(...)`.
+- `ConfigOption` understands grouped select options (`group` + nested `options`) and
+  `description`; `ConfigOption.AllValues` flattens groups.
+- `session/set_model` was routable from the client but not dispatched on the agent side.
+- Unknown `sessionUpdate` kinds no longer throw (which dropped the whole notification); they
+  surface as `UnknownSessionUpdate` with the raw JSON and round-trip unchanged.
+- Build: dropped the explicit `Microsoft.SourceLink.GitHub` 8.0.0 reference (built into the SDK);
+  its vulnerable `Microsoft.Build.Tasks.Git` dependency failed restore under warnings-as-errors.
+
+### Added
+- `session/delete` (`IAgent.DeleteSessionAsync`, `sessionCapabilities.delete`).
+- `logout` (`IAgent.LogoutAsync`, `agentCapabilities.auth.logout`).
+- `$/cancel_request` in `Connection`: cancelling an outgoing request's token notifies the peer;
+  an incoming `$/cancel_request` cancels the handler's token and the request is answered with
+  `-32800` (`RequestErrorException.RequestCancelled`).
+- Session updates `usage_update` (`UsageUpdate`, `Cost`) and `config_option_update`
+  (`ConfigOptionUpdate`).
+- `messageId` on message/thought chunks; `name` on tool calls and tool call updates.
+- Client capabilities `auth.terminal`, `session.configOptions.boolean`, `elicitation` (raw JSON);
+  terminal auth method fields `type` / `args` / `env` on `AuthMethod`.
+- `SessionInfo.additionalDirectories`, `ResumeSessionResponse.configOptions`.
+
+### Deprecated
+- `EndTurnUpdate` (`end_turn`) and `DiffUpdate` (`diff`): not part of ACP. Still decoded for
+  compatibility, marked `[Obsolete]`.
+
+### Not yet implemented
+- `elicitation/create` / `elicitation/complete` (stable since upstream 1.7.0).
+
 ## [0.1.0] — 2026-05-17
 
 ### Added

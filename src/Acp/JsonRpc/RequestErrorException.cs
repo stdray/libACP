@@ -55,6 +55,10 @@ public sealed class RequestErrorException : Exception
     public static RequestErrorException InternalError(object? data = null, string? additionalMessage = null) =>
         new(-32603, additionalMessage is null ? "Internal error" : $"Internal error: {additionalMessage}", Wrap(data));
 
+    /// <summary>ACP <c>-32800</c> Request cancelled (response to <c>$/cancel_request</c>).</summary>
+    public static RequestErrorException RequestCancelled(object? data = null) =>
+        new(-32800, "Request cancelled", Wrap(data));
+
     /// <summary>ACP-specific <c>-32000</c> Authentication required.</summary>
     public static RequestErrorException AuthRequired(object? data = null, string? additionalMessage = null) =>
         new(-32000, additionalMessage is null ? "Authentication required" : $"Authentication required: {additionalMessage}", Wrap(data));

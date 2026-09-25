@@ -37,18 +37,21 @@ dotnet build Acp.slnx
 
 - Full coverage of the **stable** ACP surface (protocol version `1`):
   - `initialize`, `authenticate`
-  - `session/new`, `session/load`, `session/resume`, `session/list`, `session/close`
+  - `session/new`, `session/load`, `session/resume`, `session/list`, `session/close`, `session/delete`, `logout`
   - `session/prompt`, `session/cancel`, `session/update`
   - `session/set_mode`, `session/set_config_option`, `session/request_permission`
   - `fs/read_text_file`, `fs/write_text_file`
   - `terminal/create`, `terminal/output`, `terminal/release`, `terminal/wait_for_exit`, `terminal/kill`
+  - Session updates incl. `usage_update` and `config_option_update`; unknown kinds are preserved as `UnknownSessionUpdate`
+  - `$/cancel_request` in both directions (`-32800` Request cancelled)
+  - Not yet: `elicitation/create`, `elicitation/complete`
   - Extension escape hatch via `extMethod` / `extNotification`
   - The `_meta` field is preserved on every type
 - `System.Text.Json` end-to-end (no Newtonsoft dependency)
 - Discriminated-union JSON converters for `ContentBlock`, `SessionUpdate`,
   `RequestPermissionOutcome`, `ToolCallContent`, `EmbeddedResourceResource`, `McpServer`, `RequestId`
 - Newline-delimited JSON transport over any `System.IO.Stream` pair (typically stdio)
-- Concurrent requests are correlated by id; cancellation is local-only by design
+- Concurrent requests are correlated by id; cancelling a request's token also sends `$/cancel_request` to the peer
 - IL-only logging hooks via `Microsoft.Extensions.Logging.Abstractions`
 
 ## Layout
@@ -57,7 +60,7 @@ dotnet build Acp.slnx
 src/
   Acp/                       # The library (net8.0 / net10.0 multi-target)
 tests/
-  Acp.Tests/                 # xUnit tests (43 tests)
+  Acp.Tests/                 # xUnit tests (78 tests)
 examples/
   EchoAgent/                 # Stdio agent that streams the prompt back
   SampleClient/              # Spawns the EchoAgent and walks the protocol

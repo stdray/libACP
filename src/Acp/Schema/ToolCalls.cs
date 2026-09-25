@@ -51,6 +51,9 @@ public sealed record ToolCall
     [JsonPropertyName("title")]
     public required string Title { get; init; }
 
+    [JsonPropertyName("name")]
+    public string? Name { get; init; }
+
     [JsonPropertyName("kind")]
     public ToolKind? Kind { get; init; }
 
@@ -81,6 +84,9 @@ public sealed record ToolCallUpdate
 
     [JsonPropertyName("title")]
     public string? Title { get; init; }
+
+    [JsonPropertyName("name")]
+    public string? Name { get; init; }
 
     [JsonPropertyName("kind")]
     public ToolKind? Kind { get; init; }

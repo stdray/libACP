@@ -21,13 +21,23 @@ public static class AgentMethods
     public const string SessionResume = "session/resume";
     public const string SessionList = "session/list";
     public const string SessionClose = "session/close";
+    public const string SessionDelete = "session/delete";
+    public const string Logout = "logout";
     public const string SessionPrompt = "session/prompt";
     public const string SessionSetMode = "session/set_mode";
+    /// <summary>Unstable in ACP v1 (not in the stable schema).</summary>
     public const string SessionSetModel = "session/set_model";
     public const string SessionSetConfigOption = "session/set_config_option";
 
     /// <summary>Notification (no response).</summary>
     public const string SessionCancel = "session/cancel";
+}
+
+/// <summary>Protocol-level methods usable by either side.</summary>
+public static class ProtocolMethods
+{
+    /// <summary>Notification asking the peer to cancel an in-flight request. Handled by <see cref="JsonRpc.Connection"/>.</summary>
+    public const string CancelRequest = "$/cancel_request";
 }
 
 /// <summary>

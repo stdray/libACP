@@ -21,15 +21,25 @@ public sealed class SessionUpdateJsonConverter : JsonConverter<SessionUpdate>
             "plan" => el.Deserialize<PlanUpdate>(options)!,
             "available_commands_update" => el.Deserialize<AvailableCommandsUpdate>(options)!,
             "current_mode_update" => el.Deserialize<CurrentModeUpdate>(options)!,
+            "config_option_update" => el.Deserialize<ConfigOptionUpdate>(options)!,
             "session_info_update" => el.Deserialize<SessionInfoUpdate>(options)!,
+            "usage_update" => el.Deserialize<UsageUpdate>(options)!,
+#pragma warning disable CS0618 // non-standard kinds kept for backward compatibility
             "end_turn" => el.Deserialize<EndTurnUpdate>(options)!,
             "diff" => el.Deserialize<DiffUpdate>(options)!,
-            _ => throw new JsonException($"Unknown SessionUpdate kind '{disc}'."),
+#pragma warning restore CS0618
+            _ => new UnknownSessionUpdate(disc, el.Clone()),
         };
     }
 
     public override void Write(Utf8JsonWriter writer, SessionUpdate value, JsonSerializerOptions options)
     {
+        if (value is UnknownSessionUpdate unknown)
+        {
+            unknown.Raw.WriteTo(writer);
+            return;
+        }
+
         JsonElement obj = JsonSerializer.SerializeToElement(value, value.GetType(), options);
         writer.WriteStartObject();
         writer.WriteString("sessionUpdate", value.SessionUpdateKind);

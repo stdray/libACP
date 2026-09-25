@@ -115,6 +115,9 @@ public sealed record ResumeSessionResponse
     [JsonPropertyName("modes")]
     public SessionModeState? Modes { get; init; }
 
+    [JsonPropertyName("configOptions")]
+    public IReadOnlyList<ConfigOption>? ConfigOptions { get; init; }
+
     [JsonPropertyName("_meta")]
     public Meta? Meta { get; init; }
 }
@@ -159,6 +162,9 @@ public sealed record SessionInfo
     [JsonPropertyName("cwd")]
     public string? Cwd { get; init; }
 
+    [JsonPropertyName("additionalDirectories")]
+    public IReadOnlyList<string>? AdditionalDirectories { get; init; }
+
     [JsonPropertyName("title")]
     public string? Title { get; init; }
 
@@ -181,6 +187,23 @@ public sealed record CloseSessionRequest
 
 /// <summary>Response to <c>session/close</c>.</summary>
 public sealed record CloseSessionResponse
+{
+    [JsonPropertyName("_meta")]
+    public Meta? Meta { get; init; }
+}
+
+/// <summary>Parameters for the <c>session/delete</c> method. Requires the <c>sessionCapabilities.delete</c> capability.</summary>
+public sealed record DeleteSessionRequest
+{
+    [JsonPropertyName("sessionId")]
+    public required SessionId SessionId { get; init; }
+
+    [JsonPropertyName("_meta")]
+    public Meta? Meta { get; init; }
+}
+
+/// <summary>Response to <c>session/delete</c>.</summary>
+public sealed record DeleteSessionResponse
 {
     [JsonPropertyName("_meta")]
     public Meta? Meta { get; init; }

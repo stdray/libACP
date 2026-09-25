@@ -53,3 +53,17 @@ public sealed record AuthenticateResponse
     [JsonPropertyName("_meta")]
     public Meta? Meta { get; init; }
 }
+
+/// <summary>Parameters for the <c>logout</c> method. Requires the <c>auth.logout</c> agent capability.</summary>
+public sealed record LogoutRequest
+{
+    [JsonPropertyName("_meta")]
+    public Meta? Meta { get; init; }
+}
+
+/// <summary>Response to the <c>logout</c> method.</summary>
+public sealed record LogoutResponse
+{
+    [JsonPropertyName("_meta")]
+    public Meta? Meta { get; init; }
+}

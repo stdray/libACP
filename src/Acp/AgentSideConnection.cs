@@ -105,10 +105,16 @@ public sealed class AgentSideConnection : IClient, IAsyncDisposable
                 return await _agent.ListSessionsAsync(Deserialize<ListSessionsRequest>(@params, method), ct).ConfigureAwait(false);
             case AgentMethods.SessionClose:
                 return await _agent.CloseSessionAsync(Deserialize<CloseSessionRequest>(@params, method), ct).ConfigureAwait(false) ?? new CloseSessionResponse();
+            case AgentMethods.SessionDelete:
+                return await _agent.DeleteSessionAsync(Deserialize<DeleteSessionRequest>(@params, method), ct).ConfigureAwait(false) ?? new DeleteSessionResponse();
+            case AgentMethods.Logout:
+                return await _agent.LogoutAsync(DeserializeOrDefault<LogoutRequest>(@params, method), ct).ConfigureAwait(false) ?? new LogoutResponse();
             case AgentMethods.SessionPrompt:
                 return await _agent.PromptAsync(Deserialize<PromptRequest>(@params, method), ct).ConfigureAwait(false);
             case AgentMethods.SessionSetMode:
                 return await _agent.SetSessionModeAsync(Deserialize<SetSessionModeRequest>(@params, method), ct).ConfigureAwait(false) ?? new SetSessionModeResponse();
+            case AgentMethods.SessionSetModel:
+                return await _agent.SetSessionModelAsync(Deserialize<SetSessionModelRequest>(@params, method), ct).ConfigureAwait(false) ?? new SetSessionModelResponse();
             case AgentMethods.SessionSetConfigOption:
                 return await _agent.SetSessionConfigOptionAsync(Deserialize<SetSessionConfigOptionRequest>(@params, method), ct).ConfigureAwait(false);
             default:
@@ -128,6 +134,10 @@ public sealed class AgentSideConnection : IClient, IAsyncDisposable
                 break;
         }
     }
+
+    /// <summary>Like <see cref="Deserialize{T}"/>, but a missing <c>params</c> yields a default instance (for all-optional requests).</summary>
+    internal static T DeserializeOrDefault<T>(JsonElement? @params, string method) where T : new()
+        => @params is null || @params.Value.ValueKind == JsonValueKind.Null ? new T() : Deserialize<T>(@params, method);
 
     internal static T Deserialize<T>(JsonElement? @params, string method)
     {

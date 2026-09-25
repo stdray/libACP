@@ -21,6 +21,12 @@ public delegate Task NotificationHandler(string method, JsonElement? @params, Ca
 /// dispatches incoming requests/notifications to the supplied handlers, and correlates outgoing
 /// requests with their responses.
 /// </summary>
+/// <remarks>
+/// Implements ACP's <c>$/cancel_request</c> in both directions: cancelling the token passed to
+/// <see cref="SendRequestAsync{TResponse}"/> notifies the peer, and an incoming
+/// <c>$/cancel_request</c> cancels the token handed to the matching request handler. A handler that
+/// then throws <see cref="OperationCanceledException"/> is answered with <c>-32800</c>.
+/// </remarks>
 public sealed class Connection : IAsyncDisposable
 {
     private readonly IMessageStream _stream;
@@ -29,6 +35,7 @@ public sealed class Connection : IAsyncDisposable
     private readonly ILogger _logger;
 
     private readonly ConcurrentDictionary<RequestIdKey, TaskCompletionSource<JsonElement?>> _pending = new();
+    private readonly ConcurrentDictionary<RequestIdKey, CancellationTokenSource> _inbound = new();
     private readonly CancellationTokenSource _shutdown = new();
     private readonly TaskCompletionSource<object?> _closed = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -106,6 +113,7 @@ public sealed class Connection : IAsyncDisposable
             if (self._pending.TryRemove(k, out var pending))
             {
                 pending.TrySetCanceled();
+                self.NotifyPeerCancelled(k.Id);
             }
         }, (this, key));
 
@@ -146,6 +154,25 @@ public sealed class Connection : IAsyncDisposable
         {
             CloseInternal(ex);
             throw;
+        }
+    }
+
+    private void NotifyPeerCancelled(RequestId id)
+    {
+        if (_shutdown.IsCancellationRequested) return;
+        _ = SendCancelRequestAsync(id);
+    }
+
+    private async Task SendCancelRequestAsync(RequestId id)
+    {
+        try
+        {
+            await SendNotificationAsync(Schema.ProtocolMethods.CancelRequest, new CancelRequestParams { RequestId = id }, _shutdown.Token)
+                .ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogDebug(ex, "Failed to send $/cancel_request for {Id}.", id);
         }
     }
 
@@ -233,10 +260,15 @@ public sealed class Connection : IAsyncDisposable
 
     private async Task HandleRequestAsync(JsonRpcMessage msg)
     {
+        // Registered before the first await so a $/cancel_request read right after this request finds it.
+        var key = new RequestIdKey(msg.Id);
+        using var requestCts = CancellationTokenSource.CreateLinkedTokenSource(_shutdown.Token);
+        bool tracked = _inbound.TryAdd(key, requestCts);
+
         JsonRpcMessage response;
         try
         {
-            object? result = await _requestHandler(msg.Method!, msg.Params, _shutdown.Token).ConfigureAwait(false);
+            object? result = await _requestHandler(msg.Method!, msg.Params, requestCts.Token).ConfigureAwait(false);
             JsonElement resultElement = result switch
             {
                 null => JsonSerializer.SerializeToElement<object?>(null, AcpJson.Options),
@@ -265,6 +297,16 @@ public sealed class Connection : IAsyncDisposable
         {
             return;
         }
+        catch (OperationCanceledException) when (requestCts.IsCancellationRequested)
+        {
+            response = new JsonRpcMessage
+            {
+                JsonRpc = "2.0",
+                Id = msg.Id,
+                HasId = true,
+                Error = RequestErrorException.RequestCancelled().ToJsonRpcError(),
+            };
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Handler for method '{Method}' threw an unexpected exception.", msg.Method);
@@ -277,6 +319,11 @@ public sealed class Connection : IAsyncDisposable
             };
         }
 
+        finally
+        {
+            if (tracked) _inbound.TryRemove(key, out _);
+        }
+
         try
         {
             await _stream.WriteAsync(response, _shutdown.Token).ConfigureAwait(false);
@@ -287,8 +334,31 @@ public sealed class Connection : IAsyncDisposable
         }
     }
 
+    private void HandleCancelRequest(JsonElement? @params)
+    {
+        RequestId id;
+        try
+        {
+            id = @params?.Deserialize<CancelRequestParams>(AcpJson.Options)?.RequestId ?? RequestId.None;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Malformed $/cancel_request params.");
+            return;
+        }
+        if (_inbound.TryGetValue(new RequestIdKey(id), out var cts))
+        {
+            try { cts.Cancel(); } catch (ObjectDisposedException) { /* request already finished */ }
+        }
+    }
+
     private async Task HandleNotificationAsync(JsonRpcMessage msg)
     {
+        if (msg.Method == Schema.ProtocolMethods.CancelRequest)
+        {
+            HandleCancelRequest(msg.Params);
+            return;
+        }
         try
         {
             await _notificationHandler(msg.Method!, msg.Params, _shutdown.Token).ConfigureAwait(false);
@@ -356,4 +426,13 @@ public sealed class Connection : IAsyncDisposable
     }
 
     private readonly record struct RequestIdKey(RequestId Id);
+
+    private sealed record CancelRequestParams
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("requestId")]
+        public RequestId RequestId { get; init; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("_meta")]
+        public Schema.Meta? Meta { get; init; }
+    }
 }
