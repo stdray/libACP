@@ -19,7 +19,8 @@
     <Authors>Sujith Jacob and contributors</Authors>
     <Company>Acp .NET</Company>
     <Copyright>Copyright (c) 2026 Sujith Jacob and contributors</Copyright>
-    <Version>0.1.0</Version>
+    <!-- Real builds get Version from GitVersion via build.cs; this only labels ad-hoc `dotnet build`s. -->
+    <Version Condition="'$(Version)' == ''">0.0.0-local</Version>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageTags>acp;agent-client-protocol;jsonrpc;ai;agent;coding-agent;mcp;sdk</PackageTags>
     <PackageProjectUrl>https://github.com/sargeMonkey/libACP</PackageProjectUrl>
