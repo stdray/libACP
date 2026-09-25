@@ -42,6 +42,11 @@ Brings the library in line with the stable ACP v1 schema (upstream schema 1.9.x)
   terminal auth method fields `type` / `args` / `env` on `AuthMethod`.
 - `SessionInfo.additionalDirectories`, `ResumeSessionResponse.configOptions`.
 
+### Build
+- Versioning via GitVersion (`GitVersion.yml`, local tool) and a Cake `build.cs`
+  (`./build.ps1` / `./build.sh`); CI and release workflows call it. The csproj no longer
+  carries a release version.
+
 ### Deprecated
 - `EndTurnUpdate` (`end_turn`) and `DiffUpdate` (`diff`): not part of ACP. Still decoded for
   compatibility, marked `[Obsolete]`.

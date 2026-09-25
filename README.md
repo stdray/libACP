@@ -69,12 +69,17 @@ examples/
 
 ## Build
 
-Requires the .NET 8 SDK (or .NET 10 SDK for the second target).
+Requires the .NET 10 SDK (pinned in `global.json`) plus the .NET 8 runtime for the `net8.0` tests.
 
 ```pwsh
-dotnet build Acp.slnx
-dotnet test  tests/Acp.Tests/Acp.Tests.csproj
+./build.ps1 -Target Test      # or: ./build.sh --target=Test
+./build.ps1                   # build, test, pack into ./artifacts
 ```
+
+The build script is a Cake file-based app (`build.cs`). The package version comes from
+[GitVersion](https://gitversion.net) (`GitVersion.yml`, local tool in `.config/dotnet-tools.json`),
+not from the csproj. Plain `dotnet build Acp.slnx` / `dotnet test` still work and produce
+`0.0.0-local`.
 
 ## Quick start — writing an agent
 

@@ -22,27 +22,27 @@ Releases are driven by **git tags**. The
 matching `v<major>.<minor>.<patch>` (optionally with a `-preview.N` suffix).
 
 ```pwsh
-# 1. Bump the version in CHANGELOG.md and stamp the release date.
-# 2. Commit and push that change.
-git add CHANGELOG.md
-git commit -m "release: 0.1.1"
+# 1. Turn [Unreleased] in CHANGELOG.md into the new version + date, commit, push to main.
+git commit -am "release: 0.2.0"
 git push
 
-# 3. Tag and push the tag.
-git tag v0.1.1
-git push origin v0.1.1
+# 2. Tag the commit on main and push the tag.
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
-The workflow will:
+The workflow runs `./build.sh --target=NuGetPush`, which:
 
-1. Restore, build (Release) and test.
-2. `dotnet pack` the library and produce `LibAcp.X.Y.Z.nupkg` + `LibAcp.X.Y.Z.snupkg`.
-3. Upload the `.nupkg`/`.snupkg` as workflow artifacts.
-4. Push to nuget.org with `--skip-duplicate` (idempotent on retry).
-5. Create a GitHub Release with auto-generated notes and attach the packages.
+1. Computes the version with GitVersion — on a tagged commit that is exactly the tag (`0.2.0`).
+2. Restores, builds (Release) and tests.
+3. Packs `LibAcp.X.Y.Z.nupkg` + `.snupkg` into `./artifacts`.
+4. Pushes to nuget.org with `--skip-duplicate` (idempotent on retry).
 
-> The version passed to `dotnet pack` is derived from the tag, not from
-> `<Version>` in the csproj. The csproj value is just the local-dev default.
+It then uploads the packages as workflow artifacts and creates a GitHub Release.
+
+> Versions come from GitVersion (`GitVersion.yml`), never from the csproj. Untagged commits get
+> pre-release versions: `<next>-ci.N` on `main`, `<next>-<branch>.N` on feature branches, where `<next>` is the last tag + patch.
+> `next-version` in `GitVersion.yml` sets the floor when no tag exists yet.
 
 ## Pre-releases
 
@@ -61,10 +61,8 @@ search results.
 Before tagging, you can verify the package builds and inspect its contents:
 
 ```pwsh
-dotnet pack src/Acp/Acp.csproj -c Release -o artifacts -p:Version=0.1.0
-# Inspect:
-tar -tvf artifacts/LibAcp.0.1.0.nupkg            # on linux/mac
-# or open artifacts/LibAcp.0.1.0.nupkg in any zip viewer on Windows
+./build.ps1 -Target Pack     # version from GitVersion, packages in ./artifacts
+dotnet tool run dotnet-gitversion . /showvariable FullSemVer   # just print the version
 ```
 
 ## Pulling a release

@@ -19,22 +19,18 @@ jobs:
         os: [ubuntu-latest, windows-latest, macos-latest]
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # GitVersion needs full history and tags
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          dotnet-version: 8.0.x
+          global-json-file: global.json
 
-      - name: Restore
-        run: dotnet restore Acp.slnx
-
-      - name: Build
-        run: dotnet build Acp.slnx --no-restore -c Release
-
-      - name: Test
-        run: dotnet test tests/Acp.Tests/Acp.Tests.csproj --no-build -c Release --logger "console;verbosity=normal"
+      - name: Build & test
+        shell: bash
+        run: ./build.sh --target=Test
 
   pack:
     name: pack (preview)
@@ -43,14 +39,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0   # needed for Source Link to stamp the commit
+          fetch-depth: 0
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: |
-            8.0.x
-            10.0.x
+          dotnet-version: 8.0.x
+          global-json-file: global.json
       - name: Pack
-        run: dotnet pack src/Acp/Acp.csproj -c Release -o artifacts
+        run: ./build.sh --target=Pack
       - name: Upload nupkg
         uses: actions/upload-artifact@v4
         with:
