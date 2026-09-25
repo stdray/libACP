@@ -56,6 +56,11 @@ public static class ClientMethods
     public const string TerminalWaitForExit = "terminal/wait_for_exit";
     public const string TerminalKill = "terminal/kill";
 
+    public const string ElicitationCreate = "elicitation/create";
+
     /// <summary>Notification (no response).</summary>
     public const string SessionUpdate = "session/update";
+
+    /// <summary>Notification (no response): a URL-mode elicitation finished.</summary>
+    public const string ElicitationComplete = "elicitation/complete";
 }

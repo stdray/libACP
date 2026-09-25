@@ -79,6 +79,12 @@ public sealed class AgentSideConnection : IClient, IAsyncDisposable
     public Task<KillTerminalResponse?> KillTerminalAsync(KillTerminalRequest request, CancellationToken cancellationToken)
         => _connection.SendRequestAsync<KillTerminalResponse?>(ClientMethods.TerminalKill, request, cancellationToken);
 
+    public Task<CreateElicitationResponse> CreateElicitationAsync(CreateElicitationRequest request, CancellationToken cancellationToken)
+        => _connection.SendRequestAsync<CreateElicitationResponse>(ClientMethods.ElicitationCreate, request, cancellationToken);
+
+    public Task CompleteElicitationAsync(CompleteElicitationNotification notification, CancellationToken cancellationToken)
+        => _connection.SendNotificationAsync(ClientMethods.ElicitationComplete, notification, cancellationToken);
+
     public Task<JsonElement?> ExtMethodAsync(string method, JsonElement? @params, CancellationToken cancellationToken)
         => _connection.SendRequestAsync<JsonElement?>(method, @params, cancellationToken);
 

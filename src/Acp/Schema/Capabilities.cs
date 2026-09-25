@@ -17,9 +17,9 @@ public sealed record ClientCapabilities
     [JsonPropertyName("auth")]
     public AuthCapabilities? Auth { get; init; }
 
-    /// <summary>Elicitation support. Kept as raw JSON until elicitation is modelled.</summary>
+    /// <summary>Elicitation support (<c>elicitation/create</c>); each mode must be advertised explicitly.</summary>
     [JsonPropertyName("elicitation")]
-    public System.Text.Json.JsonElement? Elicitation { get; init; }
+    public ElicitationCapabilities? Elicitation { get; init; }
 
     [JsonPropertyName("_meta")]
     public Meta? Meta { get; init; }

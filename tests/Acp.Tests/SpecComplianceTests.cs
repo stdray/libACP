@@ -131,7 +131,8 @@ public class SpecComplianceTests
             """{"auth":{"terminal":true},"session":{"configOptions":{"boolean":{}}},"elicitation":{"form":{}}}""");
         Assert.True(client.Auth!.Terminal);
         Assert.NotNull(client.Session!.ConfigOptions!.Boolean);
-        Assert.Equal(JsonValueKind.Object, client.Elicitation!.Value.ValueKind);
+        Assert.NotNull(client.Elicitation!.Form);
+        Assert.Null(client.Elicitation.Url);
     }
 
     [Fact]

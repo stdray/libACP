@@ -48,6 +48,17 @@ public interface IClient
     Task<KillTerminalResponse?> KillTerminalAsync(KillTerminalRequest request, CancellationToken cancellationToken)
         => throw JsonRpc.RequestErrorException.MethodNotFound(Schema.ClientMethods.TerminalKill);
 
+    /// <summary>
+    /// Asks the user for structured input (form mode) or consent to open a URL (URL mode).
+    /// Requires the matching <c>elicitation</c> client capability.
+    /// </summary>
+    Task<CreateElicitationResponse> CreateElicitationAsync(CreateElicitationRequest request, CancellationToken cancellationToken)
+        => throw JsonRpc.RequestErrorException.MethodNotFound(Schema.ClientMethods.ElicitationCreate);
+
+    /// <summary>Notification that a URL-mode elicitation finished. Default implementation ignores it.</summary>
+    Task CompleteElicitationAsync(CompleteElicitationNotification notification, CancellationToken cancellationToken)
+        => Task.CompletedTask;
+
     /// <summary>Escape hatch for custom JSON-RPC requests (names starting with <c>_</c>).</summary>
     Task<JsonElement?> ExtMethodAsync(string method, JsonElement? @params, CancellationToken cancellationToken)
         => throw JsonRpc.RequestErrorException.MethodNotFound(method);

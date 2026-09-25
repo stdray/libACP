@@ -32,16 +32,19 @@ Brings the library in line with the stable ACP v1 schema (upstream schema 1.9.x)
 - Session updates `usage_update` (`UsageUpdate`, `Cost`) and `config_option_update`
   (`ConfigOptionUpdate`).
 - `messageId` on message/thought chunks; `name` on tool calls and tool call updates.
-- Client capabilities `auth.terminal`, `session.configOptions.boolean`, `elicitation` (raw JSON);
+- Elicitation: `elicitation/create` (`IClient.CreateElicitationAsync`; `FormElicitationRequest` /
+  `UrlElicitationRequest`, session or request `ElicitationScope`, `ElicitationSchema` with typed
+  property schemas; responses `AcceptElicitationResponse` / `DeclineElicitationResponse` /
+  `CancelElicitationResponse`) and `elicitation/complete` (`IClient.CompleteElicitationAsync`).
+  Unknown modes, actions and property types are preserved and round-trip unchanged.
+- Client capabilities `auth.terminal`, `session.configOptions.boolean`, `elicitation`
+  (`ElicitationCapabilities` with `form` / `url`);
   terminal auth method fields `type` / `args` / `env` on `AuthMethod`.
 - `SessionInfo.additionalDirectories`, `ResumeSessionResponse.configOptions`.
 
 ### Deprecated
 - `EndTurnUpdate` (`end_turn`) and `DiffUpdate` (`diff`): not part of ACP. Still decoded for
   compatibility, marked `[Obsolete]`.
-
-### Not yet implemented
-- `elicitation/create` / `elicitation/complete` (stable since upstream 1.7.0).
 
 ## [0.1.0] — 2026-05-17
 

@@ -39,6 +39,15 @@ public static class AcpJson
         options.Converters.Add(new McpServerJsonConverter());
         options.Converters.Add(new SessionUpdateJsonConverter());
         options.Converters.Add(new RequestPermissionOutcomeJsonConverter());
+        options.Converters.Add(new ElicitationPropertySchemaJsonConverter());
+        options.Converters.Add(new MultiSelectItemsJsonConverter());
+        options.Converters.Add(new ElicitationContentValueJsonConverter());
+        var elicitationRequest = new CreateElicitationRequestJsonConverter();
+        var elicitationResponse = new CreateElicitationResponseJsonConverter();
+        options.Converters.Add(elicitationRequest);
+        options.Converters.Add(elicitationResponse);
+        options.Converters.Add(new DerivedUnionJsonConverterFactory<Schema.CreateElicitationRequest>(elicitationRequest));
+        options.Converters.Add(new DerivedUnionJsonConverterFactory<Schema.CreateElicitationResponse>(elicitationResponse));
 
         options.MakeReadOnly();
         return options;

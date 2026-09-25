@@ -114,6 +114,8 @@ public sealed class ClientSideConnection : IAgent, IAsyncDisposable
                 return await _client.WaitForTerminalExitAsync(AgentSideConnection.Deserialize<WaitForTerminalExitRequest>(@params, method), ct).ConfigureAwait(false);
             case ClientMethods.TerminalKill:
                 return await _client.KillTerminalAsync(AgentSideConnection.Deserialize<KillTerminalRequest>(@params, method), ct).ConfigureAwait(false) ?? new KillTerminalResponse();
+            case ClientMethods.ElicitationCreate:
+                return await _client.CreateElicitationAsync(AgentSideConnection.Deserialize<CreateElicitationRequest>(@params, method), ct).ConfigureAwait(false);
             default:
                 return await _client.ExtMethodAsync(method, @params, ct).ConfigureAwait(false);
         }
@@ -125,6 +127,9 @@ public sealed class ClientSideConnection : IAgent, IAsyncDisposable
         {
             case ClientMethods.SessionUpdate:
                 await _client.SessionUpdateAsync(AgentSideConnection.Deserialize<SessionNotification>(@params, method), ct).ConfigureAwait(false);
+                break;
+            case ClientMethods.ElicitationComplete:
+                await _client.CompleteElicitationAsync(AgentSideConnection.Deserialize<CompleteElicitationNotification>(@params, method), ct).ConfigureAwait(false);
                 break;
             default:
                 await _client.ExtNotificationAsync(method, @params, ct).ConfigureAwait(false);

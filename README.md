@@ -44,7 +44,7 @@ dotnet build Acp.slnx
   - `terminal/create`, `terminal/output`, `terminal/release`, `terminal/wait_for_exit`, `terminal/kill`
   - Session updates incl. `usage_update` and `config_option_update`; unknown kinds are preserved as `UnknownSessionUpdate`
   - `$/cancel_request` in both directions (`-32800` Request cancelled)
-  - Not yet: `elicitation/create`, `elicitation/complete`
+  - `elicitation/create` (form and URL modes), `elicitation/complete`, `clientCapabilities.elicitation`
   - Extension escape hatch via `extMethod` / `extNotification`
   - The `_meta` field is preserved on every type
 - `System.Text.Json` end-to-end (no Newtonsoft dependency)
@@ -215,7 +215,7 @@ dotnet test tests/Acp.Tests/Acp.Tests.csproj
 ## Out of scope
 
 The unstable surface that the TS SDK marks `unstable_*` is intentionally **not** modelled in this
-release: NES, elicitation, providers, document sync (`document/did*`), and `session/set_model`.
+release: NES, providers, document sync (`document/did*`), and `session/set_model`.
 You can still reach them via the `extMethod` / `extNotification` escape hatch.
 
 ## Related projects
